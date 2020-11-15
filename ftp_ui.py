@@ -1,10 +1,17 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import *
 from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 import os
 class Ui_MainWindow(QMainWindow):
     def __init__(self):
         self.log = ""
         self.text = "..\n"
+        self.createFileListWidget()
+        # self.fileList.setContextMenuPolicy(Qt.CustomContextMenu)  # 打开右键菜单的策略
+        # self.fileList.customContextMenuRequested.connect(self.showMenu)  # 绑定事件
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(718, 600)
@@ -22,12 +29,13 @@ class Ui_MainWindow(QMainWindow):
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setObjectName("label")
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
-        self.textBrowser = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser.setObjectName("textBrowser")
-        self.gridLayout.addWidget(self.textBrowser, 6, 0, 1, 4)
+        # self.textBrowser = QtWidgets.QTextBrowser(self.centralwidget)
+        # self.textBrowser.setObjectName("textBrowser")
+        # self.gridLayout.addWidget(self.textBrowser, 6, 0, 1, 4)
+        self.gridLayout.addWidget(self.fileList, 6, 4, 1, 4)
         self.textBrowser_2 = QtWidgets.QTextBrowser(self.centralwidget)
         self.textBrowser_2.setObjectName("textBrowser_2")
-        self.gridLayout.addWidget(self.textBrowser_2, 6, 4, 1, 4)
+        self.gridLayout.addWidget(self.textBrowser_2, 6, 0, 1, 4)
         self.label_3 = QtWidgets.QLabel(self.centralwidget)
         self.label_3.setObjectName("label_3")
         self.gridLayout.addWidget(self.label_3, 2, 3, 1, 1)
@@ -41,6 +49,10 @@ class Ui_MainWindow(QMainWindow):
         self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setObjectName("pushButton_4")
         self.gridLayout.addWidget(self.pushButton_4, 4, 2, 1, 1)
+
+        self.pushButton_5 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton.setObjectName("pushButton_5")
+        self.gridLayout.addWidget(self.pushButton_5, 5, 4, 1, 1)
 
         self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit.setObjectName("lineEdit")
@@ -92,6 +104,7 @@ class Ui_MainWindow(QMainWindow):
         self.pushButton_2.setText(_translate("MainWindow", "新建文件夹"))
         self.pushButton_3.setText(_translate("MainWindow", "upload"))
         self.pushButton_4.setText(_translate("MainWindow", "关闭连接"))
+        self.pushButton_5.setText(_translate("MainWindow", "download"))
         self.menueasyFTP.setTitle(_translate("MainWindow", "easyFTP"))
         self.menuhelp.setTitle(_translate("MainWindow", "help"))
 
@@ -122,15 +135,33 @@ class Ui_MainWindow(QMainWindow):
     def callbacklog(self, msg):
         self.log =self.log +msg+ "\n"
         self.textBrowser_2.setText(self.log)
-    def filedir(self,filelist):
-        if filelist==None:
-            return
-        for file in filelist:
-            self.text =self.text+file+ "\n"
-        self.textBrowser.setText(self.text)
-    
-    def open_file():
-        fileName,fileType = QtWidgets.QFileDialog.getOpenFileName("选取文件", os.getcwd(), 
-        "All Files(*);;Text Files(*.txt)")
+    # def filedir(self,filelist):
+    #     if filelist==None:
+    #         return
+    #     for file in filelist:
+    #         self.text =self.text+file+ "\n"
+    #     self.textBrowser.setText(self.text)
+    def createFileListWidget(self):
+        self.fileList = QtWidgets.QTreeWidget()
+        self.fileList.setIconSize(QtCore.QSize(20, 20))
+        self.fileList.setRootIsDecorated(False)
+        self.fileList.setHeaderLabels(('Name', 'Size', 'Owner', 'Group', 'Time', 'Mode'))
+        self.fileList.header().setStretchLastSection(False)
+    # def showMenu(self):
+    #     item = self.fileList.currentItem()
+    #     #item1 = self.fileList.itemAt(pos)
+    #     menu = QMenu()
+    #     download = menu.addAction(QAction(u'下载',self))
+    #     # download.triggered.connect(self.testDownload)
+    #     property = menu.addAction(QAction(u"属性",self))
+    #     # property.triggered.connect(self.testProperty)
+    #     menu.popup(QCursor.pos())
+    #     print("++++++++++")
+    def testDownload(self):
+        print("download success")
+    def testProperty(self):
+        print("testProperty success")
+
+
     
     
