@@ -14,6 +14,7 @@ from ftplib import error_perm
 app_icon_path = os.path.join(os.path.dirname(__file__), 'icon')
 qIcon = lambda name: QtGui.QIcon(os.path.join(app_icon_path, name))
 ftp = FTP()
+ftp.status = False
 ftp.set_debuglevel(0)
 back_dir = ['/']
 remote_dir = '/'
@@ -30,14 +31,17 @@ def connect(ftp,ui):
         ftp.login(user=user,passwd=passwd)
         # dir = cat_dir(ftp,filepath='/')
         ftp.cwd(remote_dir)
+        ftp.status = True
         #ui.filedir(dir)
         loadremoteList(ftp,ui)
     except(socket.error, socket.gaierror):
         ui.showDialog()
         ui.callbacklog("failure connected")
+        ftp.status = False
     except error_perm:
         ui.showDialog()
         ui.callbacklog("failure authentication")
+        ftp.status = False
     
 def loadremoteList(ftp,ui):
     templist = []
@@ -163,7 +167,6 @@ def download(ftp,ui):
     #     print("failure!")
     bufsize = 1024
     srcfile  = ftp.pwd()+'/'+str(ui.fileList.currentItem().text(0))
-    print("11111111111111")
     fileName = QtWidgets.QFileDialog.getExistingDirectory(None,"选取路径", os.getcwd())
     filename = fileName+ '/' + str(ui.fileList.currentItem().text(0))
     try:
@@ -177,6 +180,24 @@ def download(ftp,ui):
     if res.find("226") !=-1:
         print("download complete")
     f.close()
+# 新建文件夹
+def makedir(ftp,ui):
+    if ftp.status == False:
+        ui.showDialog()
+        return
+    filename = ui.NewNameDialog()
+    ftp.mkd(remote_dir + filename)
+
+# 重命名
+def rename(ftp,ui):
+    if ftp.status == False:
+        ui.showDialog()
+        return
+    nowfilename = srcfile  = ftp.pwd()+'/'+str(ui.fileList.currentItem().text(0))
+    filename = ui.NewNameDialog()
+    ftp.rename(nowfilename , ftp.pwd()+'/' + filename )
+
+
 
 # for test
 def click_success():
@@ -207,6 +228,8 @@ if  __name__ == "__main__":
     ui.pushButton_3.clicked.connect(partial(uploadfile,ftp,remote_dir,ui))
     ui.pushButton_4.clicked.connect(partial(closeftp,ftp))
     ui.pushButton_5.clicked.connect(partial(download,ftp,ui))
+    ui.pushButton_2.clicked.connect(partial(makedir,ftp,ui))
+    ui.pushButton_6.clicked.connect(partial(rename,ftp,ui))
     ui.fileList.itemDoubleClicked.connect(partial(openremotepath,ftp,ui))
     # ui.fileList.setContextMenuPolicy(Qt.CustomContextMenu)  # 打开右键菜单的策略
     # ui.fileList.customContextMenuRequested.connect(partial(showMenu,ui))  # 绑定事件

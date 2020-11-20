@@ -54,6 +54,10 @@ class Ui_MainWindow(QMainWindow):
         self.pushButton.setObjectName("pushButton_5")
         self.gridLayout.addWidget(self.pushButton_5, 5, 4, 1, 1)
 
+        self.pushButton_6 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton.setObjectName("pushButton_6")
+        self.gridLayout.addWidget(self.pushButton_6, 5, 5, 1, 1)
+
         self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit.setObjectName("lineEdit")
         self.gridLayout.addWidget(self.lineEdit, 0, 1, 1, 2)
@@ -105,6 +109,7 @@ class Ui_MainWindow(QMainWindow):
         self.pushButton_3.setText(_translate("MainWindow", "upload"))
         self.pushButton_4.setText(_translate("MainWindow", "关闭连接"))
         self.pushButton_5.setText(_translate("MainWindow", "download"))
+        self.pushButton_6.setText(_translate("MainWindow", "重命名"))
         self.menueasyFTP.setTitle(_translate("MainWindow", "easyFTP"))
         self.menuhelp.setTitle(_translate("MainWindow", "help"))
 
@@ -157,6 +162,26 @@ class Ui_MainWindow(QMainWindow):
     #     # property.triggered.connect(self.testProperty)
     #     menu.popup(QCursor.pos())
     #     print("++++++++++")
+    def NewNameDialog(self):
+        vbox=QtWidgets.QVBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
+        line = QtWidgets.QLineEdit()
+        line.setText("请输入名字")
+        newnamedialog = QtWidgets.QDialog()
+        newnamedialog.resize(400,300)
+        okBtn = QtWidgets.QPushButton("确定")
+        cancelBtn = QtWidgets.QPushButton("返回")
+        okBtn.clicked.connect(self.ok)
+        cancelBtn.clicked.connect(self.cancel)
+        newnamedialog.setWindowTitle("提示信息！")
+        hbox.addWidget(okBtn)
+        hbox.addWidget(cancelBtn)
+        vbox.addWidget(line)
+        vbox.addLayout(hbox)
+        newnamedialog.setLayout(vbox)
+        newnamedialog.setWindowModality(QtCore.Qt.ApplicationModal)
+        newnamedialog.exec_()
+        return line.text()
     def testDownload(self):
         print("download success")
     def testProperty(self):
