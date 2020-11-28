@@ -3,7 +3,7 @@ import os,sys
 import ftplib
 from ftplib import FTP
 import ftp_ui
-from ftp_ui import Ui_MainWindow
+from ftp_ui import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -26,6 +26,13 @@ def connect(ftp,ui):
     user = ui.lineEdit_2.text()
     passwd = ui.lineEdit_4.text()
     try:
+        ftp.close()
+        ui.clear()
+        ui.fileList.clear()
+    except:
+        pass
+
+    try:
         s = ftp.connect(host = host,port = port)
         ui.callbacklog(ftp.welcome)
         ftp.login(user=user,passwd=passwd)
@@ -35,12 +42,12 @@ def connect(ftp,ui):
         #ui.filedir(dir)
         loadremoteList(ftp,ui)
     except(socket.error, socket.gaierror):
-        ui.showDialog()
-        ui.callbacklog("failure connected")
+        ui.showDialog("")
+        ui.callbacklog("status: failure connected")
         ftp.status = False
     except error_perm:
-        ui.showDialog()
-        ui.callbacklog("failure authentication")
+        ui.showDialog("")
+        ui.callbacklog("status: failure authentication")
         ftp.status = False
     
 def loadremoteList(ftp,ui):
@@ -106,19 +113,17 @@ def openremotepath(ftp,ui):
         pathname = os.path.join(ftp.pwd(),str(ui.fileList.currentItem().text(0)))
         if is_ftp_dir(pathname):
             ftp.cwd(pathname)
-            #back_dir = remote_dir
+            # back_dir = remote_dir
             remote_dir = ftp.pwd()
             back_dir.append(remote_dir)
             clearremoteList(ftp)
             ui.fileList.clear()
             loadremoteList(ftp,ui)
-    
 
-
-
-
-def closeftp(ftp):
+def closeftp(ftp,ui):
     ftp.close()
+    ui.clear()
+    ui.fileList.clear()
     print("close success")
 
 def is_ftp_file(ftp, ftp_path):
@@ -133,17 +138,23 @@ def is_ftp_dir(path):
     return remoteDir.get(path,None)
 
 def uploadfile(ftp,remotepath,ui):
-    fileName,fileType = QtWidgets.QFileDialog.getOpenFileName(None,"选取文件", os.getcwd(), 
-        "All Files(*);;Text Files(*.txt)")
-    print("----------------")
-    print(fileName)
-    bufsize = 1024
-    fp = open(fileName, 'rb')
-    print("----------------")
-    res = ftp.storbinary('STOR ' + remote_dir+"/a.txt", fp, bufsize)  # 上传文件
-    if res.find('226') != -1:
-        ('upload file complete', remotepath)
-    ftp.set_debuglevel(0)
+    try:
+        fileName,fileType = QtWidgets.QFileDialog.getOpenFileName(None,"选取文件", os.getcwd(), 
+            "All Files(*);;Text Files(*.txt)")
+        name = fileName.split('/')[-1]  #得到文件名字
+        bufsize = 1024
+        fp = open(fileName, 'rb')
+
+        res = ftp.storbinary('STOR '+ back_dir[-1]+"/"+name, fp, bufsize)  # 上传文件
+        if res.find('226') != -1:
+            ('upload file complete', remotepath)
+            ui.showDialog("status: upload success")
+            ui.callbacklog("status: upload success")
+        ftp.set_debuglevel(0)
+    except:
+        ui.showDialog("status: upload permission Deny")
+        ui.callbacklog("status: upload permission Deny")
+
 
 def download(ftp,ui):
     filesize = int(ui.fileList.currentItem().text(1))
@@ -165,75 +176,96 @@ def download(ftp,ui):
     #     f.close()
     # except AttributeError:
     #     print("failure!")
-    bufsize = 1024
-    srcfile  = ftp.pwd()+'/'+str(ui.fileList.currentItem().text(0))
-    fileName = QtWidgets.QFileDialog.getExistingDirectory(None,"选取路径", os.getcwd())
-    filename = fileName+ '/' + str(ui.fileList.currentItem().text(0))
     try:
-        fp = open(filename,'wb+')
-    except:
-        pass
-    res = ftp.retrbinary(
-    'RETR ' + srcfile,
-    fp.write,
-    bufsize)
-    if res.find("226") !=-1:
-        print("download complete")
-    f.close()
+        bufsize = 1024
+        srcfile  = ftp.pwd()+'/'+str(ui.fileList.currentItem().text(0))
+        fileName = QtWidgets.QFileDialog.getExistingDirectory(None,"选取路径", os.getcwd())
+        filename = fileName+ '/' + str(ui.fileList.currentItem().text(0))
+        try:
+            fp = open(filename,'wb+')
+        except:
+            pass
+        res = ftp.retrbinary(
+        'RETR ' + srcfile,
+        fp.write,
+        bufsize)
+        if res.find("226") !=-1:
+            ui.showDialog("status: download success")
+            ui.callbacklog("status: download success")
+        fp.close()
+    except AttributeError:
+        ui.showDialog("status: download permission Deny")
+        ui.callbacklog("status: download permission Deny")
+
 # 新建文件夹
 def makedir(ftp,ui):
     if ftp.status == False:
         ui.showDialog()
         return
-    filename = ui.NewNameDialog()
-    ftp.mkd(remote_dir + filename)
-
+    try:
+        filename = ui.NewNameDialog()
+        ftp.mkd(remote_dir + filename)
+    except:
+        ui.showDialog("status: make dir permission Deny")
+        ui.callbacklog("status: make dir permission Deny")
+def ok(ui):
+    ui.ok()
+def cancel(ui):
+    ui.cancel()
 # 重命名
 def rename(ftp,ui):
     if ftp.status == False:
         ui.showDialog()
         return
-    nowfilename = srcfile  = ftp.pwd()+'/'+str(ui.fileList.currentItem().text(0))
-    filename = ui.NewNameDialog()
-    ftp.rename(nowfilename , ftp.pwd()+'/' + filename )
+    try:
+        nowfilename = srcfile  = ftp.pwd()+'/'+str(ui.fileList.currentItem().text(0))
+        filename = ui.NewNameDialog()
+        ftp.rename(nowfilename , ftp.pwd()+'/' + filename )
+    except:
+        ui.showDialog("status: rename operation failure")
+        ui.callbacklog("status: rename operation failure")
 
 
 
-# for test
-def click_success():
-    print("success")
-def open_file():
-        fileName,fileType = QtWidgets.QFileDialog.getOpenFileName(None,"选取文件", os.getcwd(), 
-        "All Files(*);;Text Files(*.txt)")
 
 
-# def showMenu(ui):
-#     item = ui.fileList.currentItem()
-#     #item1 = ui.fileList.itemAt(pos)
-#     menu = QMenu()
-#     download = menu.addAction(QAction(u'下载'))
-#     # download.triggered.connect(self.testDownload)
-#     property = menu.addAction(QAction(u"属性"))
-#     # property.triggered.connect(self.testProperty)
-#     menu.exec_(QCursor.pos())
-#     print("sdsa")
 
-if  __name__ == "__main__":
-    app = QApplication(sys.argv)
-    MainWindow = QMainWindow()
-    ui = ftp_ui.Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    # 前端与后端相连接
+def showMenu(ui):
+    item = ui.fileList.currentItem()
+    #item1 = ui.fileList.itemAt(pos)
+    menu = QMenu()
+    download = menu.addAction(QAction(u'下载',ui))
+    download.triggered.connect(partial(download,ftp,ui))
+    re = menu.addAction(QAction(u"重命名",ui))
+    re.triggered.connect(partial(rename,ftp,ui))
+    mkdir = menu.addAction(QAction(u"重命名",ui))
+    mkdir.triggered.connect(partial(makedir,ftp,ui)) 
+    menu.setWindowModality(QtCore.Qt.ApplicationModal)
+    # property.triggered.connect(self.testProperty)
+    menu.exec_(QCursor.pos())
+
+
+def makeconnect(ui):
     ui.pushButton.clicked.connect(partial(connect,ftp,ui))
     ui.pushButton_3.clicked.connect(partial(uploadfile,ftp,remote_dir,ui))
-    ui.pushButton_4.clicked.connect(partial(closeftp,ftp))
+    ui.pushButton_4.clicked.connect(partial(closeftp,ftp,ui))
     ui.pushButton_5.clicked.connect(partial(download,ftp,ui))
     ui.pushButton_2.clicked.connect(partial(makedir,ftp,ui))
     ui.pushButton_6.clicked.connect(partial(rename,ftp,ui))
     ui.fileList.itemDoubleClicked.connect(partial(openremotepath,ftp,ui))
-    # ui.fileList.setContextMenuPolicy(Qt.CustomContextMenu)  # 打开右键菜单的策略
-    # ui.fileList.customContextMenuRequested.connect(partial(showMenu,ui))  # 绑定事件
+    ui.fileList.setContextMenuPolicy(Qt.CustomContextMenu)  # 打开右键菜单的策略
+    ui.fileList.customContextMenuRequested.connect(partial(showMenu,ui))  # 绑定事件
+    ui.okBtn.clicked.connect(partial(ok,ui))
+    ui.cancelBtn.clicked.connect(partial(cancel,ui))
 
+
+
+if  __name__ == "__main__":
+    app = QApplication(sys.argv)
+    MainWindow = QMainWindow()    
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    makeconnect(ui)
     MainWindow.show()    
     sys.exit(app.exec_())
     

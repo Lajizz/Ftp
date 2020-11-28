@@ -7,11 +7,13 @@ from PyQt5.QtCore import *
 import os
 class Ui_MainWindow(QMainWindow):
     def __init__(self):
+        super(QMainWindow,self).__init__()
         self.log = ""
         self.text = "..\n"
         self.createFileListWidget()
-        # self.fileList.setContextMenuPolicy(Qt.CustomContextMenu)  # 打开右键菜单的策略
-        # self.fileList.customContextMenuRequested.connect(self.showMenu)  # 绑定事件
+        self.okBtn = QtWidgets.QPushButton("确定")
+        self.cancelBtn = QtWidgets.QPushButton("返回")
+        self.setFixedSize(self.width(), self.height())
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(718, 600)
@@ -114,29 +116,28 @@ class Ui_MainWindow(QMainWindow):
         self.menuhelp.setTitle(_translate("MainWindow", "help"))
 
         
-    def showDialog(self):
+    def showDialog(self,str):
         vbox=QtWidgets.QVBoxLayout()
         hbox = QtWidgets.QHBoxLayout()
         panel = QtWidgets.QLabel()
-        panel.setText("连接失败！请检查输入信息")
+        if len(str)==0:
+            panel.setText("连接失败！请检查输入信息")
+        else:
+            panel.setText(str)
         self.dialog = QtWidgets.QDialog()
-        self.dialog.resize(300,200)
-        self.okBtn = QtWidgets.QPushButton("确定")
-        self.cancelBtn = QtWidgets.QPushButton("返回")
-        self.okBtn.clicked.connect(self.ok)
-        self.cancelBtn.clicked.connect(self.cancel)
+        self.dialog.resize(300,100)
+        
+        # self.okBtn.clicked.connect(self.ok)
+        # self.cancelBtn.clicked.connect(self.cancel)
         self.dialog.setWindowTitle("提示信息！")
-        hbox.addWidget(self.okBtn)
-        hbox.addWidget(self.cancelBtn)
+        # hbox.addWidget(self.okBtn)
+        # hbox.addWidget(self.cancelBtn)
         vbox.addWidget(panel)
         vbox.addLayout(hbox)
         self.dialog.setLayout(vbox)
         self.dialog.setWindowModality(QtCore.Qt.ApplicationModal)
         self.dialog.exec_()
-    def ok(self):
-        self.dialog.close()
-    def cancel(self):
-        self.dialog.close()
+    
     def callbacklog(self, msg):
         self.log =self.log +msg+ "\n"
         self.textBrowser_2.setText(self.log)
@@ -152,16 +153,6 @@ class Ui_MainWindow(QMainWindow):
         self.fileList.setRootIsDecorated(False)
         self.fileList.setHeaderLabels(('Name', 'Size', 'Owner', 'Group', 'Time', 'Mode'))
         self.fileList.header().setStretchLastSection(False)
-    # def showMenu(self):
-    #     item = self.fileList.currentItem()
-    #     #item1 = self.fileList.itemAt(pos)
-    #     menu = QMenu()
-    #     download = menu.addAction(QAction(u'下载',self))
-    #     # download.triggered.connect(self.testDownload)
-    #     property = menu.addAction(QAction(u"属性",self))
-    #     # property.triggered.connect(self.testProperty)
-    #     menu.popup(QCursor.pos())
-    #     print("++++++++++")
     def NewNameDialog(self):
         vbox=QtWidgets.QVBoxLayout()
         hbox = QtWidgets.QHBoxLayout()
@@ -186,7 +177,30 @@ class Ui_MainWindow(QMainWindow):
         print("download success")
     def testProperty(self):
         print("testProperty success")
+    def clear(self):
+        self.log = ""
+        self.text = "..\n"
+        self.textBrowser_2.setText(self.log)
 
-
+# class ftpUI(Ui_MainWindow):
+#     def __init__(self):
+#         Ui_MainWindow.__init__(self)
+#         self.fileList.setContextMenuPolicy(Qt.CustomContextMenu)  # 打开右键菜单的策略
+#         self.fileList.customContextMenuRequested.connect(self.showMenu)  # 绑定事件
     
+#     def showMenu(self,pos):
+#         item = self.fileList.currentItem()
+#         #item1 = self.fileList.itemAt(pos)
+#         print("w")
+#         self.menu = QMenu()
+#         print("ww")
+#         self.menu.addAction(QAction(u'下载'))
+#         # download.triggered.connect(self.testDownload)
+#         self.menu.addAction(QAction(u"属性"))
+#         # property.triggered.connect(self.testProperty)
+#         print("www")
+#         self.menu.exec_(QCursor.pos())
+#         print("wwww")
+#         self.menu.show()
+#         print("++++++++++")
     
