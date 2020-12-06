@@ -1,0 +1,10 @@
+IP='127.0.0.1'                                                 #IP                       
+PORT=21                                                        #端口
+MAX_UPLOAD=100*1024                                            #上载速度
+MAX_DOWNLOAD =100*1024                                         #下载速度
+MAX_CONS=100                                                   #最大连接数
+MAX_PER_IP=10                                                  #连接ip数
+PASSIVE_PORT=(8300,8500)                                       #被动连接端口范围
+ENABLE_ANONYMOUS=True                                         #启用匿名访问
+ANONYMOUS_DIR=r'D:\pywork\Ftp\Ftp_Server\Remote_dir\anonusers'  #匿名访问路径
+WELCOME_MSG='welcome!'                                         #欢迎信息

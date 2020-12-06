@@ -4,7 +4,7 @@ from pyftpdlib.servers import FTPServer
 import configparser
 import logging
 import threading
-
+from conf import *
 #class FTP_server(threading.Thread):
 class FTP_server(object):
     def __init__(self):
@@ -16,16 +16,19 @@ class FTP_server(object):
         self.max_cons = 100
         self.max_pre_ip = 10
         self.passive_port = (8300,8500)
-        self.enable_anonymous = False
+        self.enable_anonymous = True
         self.anonymous_dir = ""
         self.log_file = r"..\pyftp.log"
         self.welcome_msg = "welcome!"
         self.server_status = False
+        self.setup()
     def setup(self):
         # 添加匿名用户 只需要路径
+        
         self.dtp_handler = ThrottledDTPHandler
         self.authorizer = DummyAuthorizer()
         self.handler = FTPHandler
+        self.loadconfig()
         if self.enable_anonymous == True:
             self.authorizer.add_anonymous(self.anonymous_dir)
         # 下载上传速度设置
@@ -35,24 +38,34 @@ class FTP_server(object):
         self.handler.passive_ports = range(self.passive_port[0], self.passive_port[1])
         # 欢迎信息
         self.handler.banner = self.welcome_msg
-        self.loadconfig()
+        
         self.server = FTPServer((self.ip, self.port), self.handler)
         self.server.max_cons = self.max_cons
         self.server.max_cons_per_ip = self.max_pre_ip
     def loadconfig(self):
         config = configparser.ConfigParser()
-        config.read("conf.ini")
-        FTP = config.sections()[0]
-        self.ip = config[FTP]["IP"]
-        self.port = config[FTP]["PORT"]
-        self.max_download = config[FTP]["MAX_DOWNLOAD"]
-        self.max_upload = config[FTP]["MAX_UPLOAD"]
-        self.max_cons = config[FTP]["MAX_CONS"]
-        self.max_pre_ip = config[FTP]["MAX_PER_IP"]
-        self.passive_port = list(config[FTP]["PASSIVE_PORT"])
-        self.enable_anonymous = config[FTP]["ENABLE_ANONYMOUS"]
-        self.anonymous_dir = config[FTP]["ANONYMOUS_DIR"]
-        self.welcome_msg = config[FTP]["WELCOME_MSG"]
+        # config.read("conf.ini")
+        # FTP = config.sections()[0]
+        # self.ip = config[FTP]["IP"]
+        # self.port = config[FTP]["PORT"]
+        # self.max_download = config[FTP]["MAX_DOWNLOAD"]
+        # self.max_upload = config[FTP]["MAX_UPLOAD"]
+        # self.max_cons = config[FTP]["MAX_CONS"]
+        # self.max_pre_ip = config[FTP]["MAX_PER_IP"]
+        # self.passive_port = list(config[FTP]["PASSIVE_PORT"])
+        # self.enable_anonymous = config[FTP]["ENABLE_ANONYMOUS"]
+        # self.anonymous_dir = config[FTP]["ANONYMOUS_DIR"]
+        # self.welcome_msg = config[FTP]["WELCOME_MSG"]
+        self.ip = IP
+        self.port = PORT
+        self.max_download = MAX_DOWNLOAD
+        self.max_upload = MAX_UPLOAD
+        self.max_cons = MAX_CONS
+        self.max_pre_ip = MAX_PER_IP
+        self.passive_port = list(PASSIVE_PORT)
+        self.enable_anonymous = ENABLE_ANONYMOUS
+        self.anonymous_dir = ANONYMOUS_DIR
+        self.welcome_msg = WELCOME_MSG
         users = configparser.ConfigParser()
         users.read('user.ini')
         user_list  = users.sections()
@@ -63,6 +76,7 @@ class FTP_server(object):
             self.authorizer.add_user(user,passwd, homedir= home_dir, perm=perm)
         self.handler.authorizer = self.authorizer
     def startServer(self):
+        
         self.server_status = True
         self.server.serve_forever()
     def close(self):

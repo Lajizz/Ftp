@@ -11,15 +11,7 @@ from PyQt5.QtCore import *
 from functools import partial
 from ftplib import error_perm
 
-app_icon_path = os.path.join(os.path.dirname(__file__), 'icon')
-qIcon = lambda name: QtGui.QIcon(os.path.join(app_icon_path, name))
-ftp = FTP()
-ftp.status = False
-ftp.set_debuglevel(0)
-back_dir = ['/']
-remote_dir = '/'
-remoteFilelist = []
-remoteDir = {}
+
 def connect(ftp,ui):
     host = ui.lineEdit.text()
     port = int(ui.lineEdit_3.text())
@@ -34,7 +26,7 @@ def connect(ftp,ui):
 
     try:
         s = ftp.connect(host = host,port = port)
-        ui.callbacklog(ftp.welcome)
+        ui.callbacklog("status:success connected")
         ftp.login(user=user,passwd=passwd)
         # dir = cat_dir(ftp,filepath='/')
         ftp.cwd(remote_dir)
@@ -157,7 +149,7 @@ def uploadfile(ftp,remotepath,ui):
 
 
 def download(ftp,ui):
-    filesize = int(ui.fileList.currentItem().text(1))
+    
     # try:
     #     bufsize = 1024
     #     srcfile  = os.path.join(ftp.pwd(), str(ui.fileList.currentItem().text(0).toUtf8()))
@@ -177,6 +169,7 @@ def download(ftp,ui):
     # except AttributeError:
     #     print("failure!")
     try:
+        filesize = int(ui.fileList.currentItem().text(1))
         bufsize = 1024
         srcfile  = ftp.pwd()+'/'+str(ui.fileList.currentItem().text(0))
         fileName = QtWidgets.QFileDialog.getExistingDirectory(None,"选取路径", os.getcwd())
@@ -209,14 +202,11 @@ def makedir(ftp,ui):
         ui.showDialog("status: make dir permission Deny")
         ui.callbacklog("status: make dir permission Deny")
 def ok(ui):
-    ui.ok()
+    print("ok")
 def cancel(ui):
     ui.cancel()
 # 重命名
 def rename(ftp,ui):
-    if ftp.status == False:
-        ui.showDialog()
-        return
     try:
         nowfilename = srcfile  = ftp.pwd()+'/'+str(ui.fileList.currentItem().text(0))
         filename = ui.NewNameDialog()
@@ -227,19 +217,33 @@ def rename(ftp,ui):
 
 
 
+def rightdown():
+    download(ftp,ui)
+def rightrename():
+    rename(ftp,ui)
+def rightmkdir():
+    mkdir(ftp,ui)
 
-
-
-def showMenu(ui):
-    item = ui.fileList.currentItem()
+def showMenu(ftp,ui):
+    
+    #item = ui.fileList.currentItem()
     #item1 = ui.fileList.itemAt(pos)
+    icon     = qIcon('download.jpg')
     menu = QMenu()
-    download = menu.addAction(QAction(u'下载',ui))
-    download.triggered.connect(partial(download,ftp,ui))
-    re = menu.addAction(QAction(u"重命名",ui))
-    re.triggered.connect(partial(rename,ftp,ui))
-    mkdir = menu.addAction(QAction(u"重命名",ui))
-    mkdir.triggered.connect(partial(makedir,ftp,ui)) 
+    down = QAction(icon,u'下载')
+    menu.addAction(down)
+    down.triggered.connect(rightdown)
+
+    icon     = qIcon('rename.jpg')
+    re = QAction(icon,u"重命名")
+    menu.addAction(re)
+    re.triggered.connect(rightrename)
+
+    icon     = qIcon('folder.png')
+    mk = QAction(icon,u'新建文件夹')
+    menu.addAction(mk)
+    mk.triggered.connect(rightmkdir)
+
     menu.setWindowModality(QtCore.Qt.ApplicationModal)
     # property.triggered.connect(self.testProperty)
     menu.exec_(QCursor.pos())
@@ -261,6 +265,15 @@ def makeconnect(ui):
 
 
 if  __name__ == "__main__":
+    app_icon_path = os.path.join(os.path.dirname(__file__), 'icon')
+    qIcon = lambda name: QtGui.QIcon(os.path.join(app_icon_path, name))
+    ftp = FTP()
+    ftp.status = False
+    ftp.set_debuglevel(0)
+    back_dir = ['/']
+    remote_dir = '/'
+    remoteFilelist = []
+    remoteDir = {}
     app = QApplication(sys.argv)
     MainWindow = QMainWindow()    
     ui = Ui_MainWindow()

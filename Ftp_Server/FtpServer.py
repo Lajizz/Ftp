@@ -119,6 +119,8 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.menubar.addAction(self.menuFTP_Server.menuAction())
+        self.pushButton_2.setEnabled(False)
+        self.pushButton_6.setEnabled(True)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -148,11 +150,11 @@ class Ui_MainWindow(object):
         self.label_6.setText(_translate("MainWindow", "最大上载速度："))
         self.pushButton_6.setText(_translate("MainWindow", "OFF"))
         self.menuFTP_Server.setTitle(_translate("MainWindow", "FTP_Server"))
-    def showDialog(self):
+    def showDialog(self,str):
         vbox=QtWidgets.QVBoxLayout()
         hbox = QtWidgets.QHBoxLayout()
         panel = QtWidgets.QLabel()
-        panel.setText("端口被占用，请修改端口号或尝试重启程序")
+        panel.setText(str)
         self.dialog = QtWidgets.QDialog()
         self.dialog.resize(300,200)
         self.dialog.setWindowTitle("提示信息！")
@@ -163,7 +165,7 @@ class Ui_MainWindow(object):
         self.dialog.exec_()
 
                
-def setstatus(ui,server_status):
+def setstatus(ui,server_status,anon_status):
     if server_status == True:
         ui.pushButton.setEnabled(False)
         ui.pushButton_5.setEnabled(True)
@@ -180,10 +182,15 @@ def setstatus(ui,server_status):
     else:
         ui.pushButton.setEnabled(True)
         ui.pushButton_5.setEnabled(False)
-        ui.pushButton_2.setEnabled(True)
+        
         ui.pushButton_3.setEnabled(True)
         ui.pushButton_4.setEnabled(True)
-        ui.pushButton_6.setEnabled(True)
+        if anon_status==True:
+            ui.pushButton_2.setEnabled(False)
+            ui.pushButton_6.setEnabled(True)
+        if anon_status==True:
+            ui.pushButton_2.setEnabled(True)
+            ui.pushButton_6.setEnabled(False)
         ui.lineEdit.setEnabled(True)
         ui.lineEdit_2.setEnabled(True)
         ui.lineEdit_3.setEnabled(True)
@@ -206,34 +213,37 @@ def createThreads():
 
 def makeclose():
     utils.stop_thread(fun.threads[fun.num_th])
-    setstatus(ui,False)
+    setstatus(ui,False,True)
     fun.num_th += 1
     print("ftp_server close up")
 def makeconnect():
     try:
-        setstatus(ui,True)
-        ui.pushButton.setText("ON")
+        status = not ui.pushButton_2.isEnabled()
+        setstatus(ui,True,status)
         ftp = Ftp_Server.FTP_server()
-        # ftp.setup()
-        # ftp.ip = ui.lineEdit.text()
-        # ftp.port = ui.lineEdit_2.text()
-        # ftp.max_download = int(ui.lineEdit_3.text()) * 1024
-        # ftp.max_upload = int(ui.lineEdit_4.text()) * 1024
-        # ftp.max_cons = int(ui.lineEdit_5.text())
-        # ftp.max_pre_ip = 10
-        # ftp.passive_port = (8300,8500)
-        # ftp.enablee_anonymous = False
-        # ftp.welcome_msg = "welcome!"
-        # ftp.server_status = True
-        ftp.setup()    
+        ftp.ip = ui.lineEdit.text()
+        ftp.port = ui.lineEdit_2.text()
+        ftp.max_download = int(ui.lineEdit_3.text()) * 1024
+        ftp.max_upload = int(ui.lineEdit_4.text()) * 1024
+        ftp.max_cons = int(ui.lineEdit_5.text())
+        ftp.max_pre_ip = 10
+        if ui.pushButton_2.isEnabled():
+            ftp.enable_anonymous = False
+        if os.path.isdir(ui.lineEdit_6.text()):
+            ftp.anonymous_dir = ui.lineEdit_6.text()
         ftp.startServer()
     except socket.error:
-        pass 
+        pass
     print("ftp_server starting up")
 def run():
     fun.threads[fun.num_th].start()
 
-
+def OnChange():
+    ui.pushButton_2.setEnabled(False)
+    ui.pushButton_6.setEnabled(True)    
+def OffChange():
+    ui.pushButton_2.setEnabled(True)
+    ui.pushButton_6.setEnabled(False)  
 
 # for test 
 def click_success():
@@ -241,6 +251,8 @@ def click_success():
 def connect():
     ui.pushButton.clicked.connect(partial(run))
     ui.pushButton_5.clicked.connect(partial(makeclose))
+    ui.pushButton_2.clicked.connect(partial(OnChange))
+    ui.pushButton_6.clicked.connect(partial(OffChange))
 
 
 if __name__ == "__main__":

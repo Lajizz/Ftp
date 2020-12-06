@@ -1,0 +1,6 @@
+re = menu.addAction(QAction(u"重命名")
+    # # re.triggered.connect(partial(rename,ftp,ui))
+    # icon     = qIcon('folder.png')
+    # mkdir = menu.addAction(QAction(icon,u"新建文件夹"))
+    # # mkdir.triggered.connect(partial(makedir,ftp,ui)) 
+    # menu.setWindowModality(QtCore.Qt.ApplicationModal)

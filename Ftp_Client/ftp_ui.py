@@ -181,7 +181,9 @@ class Ui_MainWindow(QMainWindow):
         self.log = ""
         self.text = "..\n"
         self.textBrowser_2.setText(self.log)
-
+    def sure(self):
+        print("ok")
+    
 # class ftpUI(Ui_MainWindow):
 #     def __init__(self):
 #         Ui_MainWindow.__init__(self)
